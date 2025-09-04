@@ -11,7 +11,7 @@ class SearchController extends Controller
 {
     public function jobs(Request $request)
     {
-        $query = JobListing::where('status', 'approved')
+        $query = JobListing::whereIn('status', ['approved', 'pending'])
             ->where('deadline', '>=', now())
             ->with(['company', 'applications']);
 

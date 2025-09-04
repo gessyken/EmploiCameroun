@@ -12,8 +12,7 @@ class ApplicationController extends Controller
 {
     public function index()
     {
-        $applications = Auth::user()->applications()->with('jobListing.company')->latest()->paginate(20);
-        // return view('candidate.applications.index', compact('applications'));
+        $applications = Auth::user()->applications()->with(['job', 'job.company'])->latest()->get();
         return response()->json($applications);
     }
 
@@ -34,8 +33,7 @@ class ApplicationController extends Controller
     {
         // Verify that the user has not already applied
         if ($job->applications()->where('candidate_id', Auth::id())->exists()) {
-            // return back()->with('error', 'You have already applied to this offer');
-            return response('You have already applied to this offer', 422);
+            return response()->json(['message' => 'Vous avez déjà postulé à cette offre'], 422);
         }
 
         // Create the application
@@ -48,8 +46,9 @@ class ApplicationController extends Controller
         // Notify the recruiter
         $job->recruiter->notify(new NewApplicationNotification($application));
 
-        // return redirect()->route('candidate.applications.index')
-        //     ->with('success', 'Application sent successfully!');
-        return response('Application sent successfully!');
+        return response()->json([
+            'message' => 'Candidature envoyée avec succès !',
+            'application' => $application->load(['job', 'job.company'])
+        ]);
     }
 }

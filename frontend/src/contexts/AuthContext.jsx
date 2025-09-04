@@ -31,8 +31,11 @@ export const AuthProvider = ({ children }) => {
       setUser(response.data);
     } catch (error) {
       console.error('Erreur lors de la récupération de l\'utilisateur:', error);
-      localStorage.removeItem('authToken');
-      delete api.defaults.headers.common['Authorization'];
+      // Ne pas supprimer le token immédiatement, laisser l'utilisateur se reconnecter
+      if (error.response?.status === 401) {
+        localStorage.removeItem('authToken');
+        delete api.defaults.headers.common['Authorization'];
+      }
     } finally {
       setLoading(false);
     }
