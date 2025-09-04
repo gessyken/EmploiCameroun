@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { HeartIcon, EyeIcon } from '@heroicons/react/24/outline';
+import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid';
 import api from '../api';
 
 const Favorites = () => {
@@ -24,131 +26,121 @@ const Favorites = () => {
   const removeFavorite = async (jobId) => {
     try {
       await api.delete(`/candidate/favorites/${jobId}`);
-      setFavorites(prev => prev.filter(fav => fav.job_listing_id !== jobId));
+      setFavorites(favorites.filter(fav => fav.job_listing_id !== jobId));
     } catch (error) {
       console.error('Erreur lors de la suppression du favori:', error);
     }
   };
 
-  const formatSalary = (min, max) => {
-    if (!min && !max) return 'Salaire non spécifié';
-    if (!min) return `Jusqu'à ${max.toLocaleString()} FCFA`;
-    if (!max) return `À partir de ${min.toLocaleString()} FCFA`;
-    return `${min.toLocaleString()} - ${max.toLocaleString()} FCFA`;
-  };
-
-  const getJobTypeLabel = (type) => {
-    const types = {
-      'full_time': 'Temps plein',
-      'part_time': 'Temps partiel',
-      'contract': 'Contrat',
-      'internship': 'Stage'
-    };
-    return types[type] || type;
-  };
-
   if (loading) {
     return (
-      <div className="d-flex justify-content-center align-items-center" style={{ height: '400px' }}>
-        <div className="spinner-border" role="status">
-          <span className="visually-hidden">Chargement...</span>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Chargement de vos favoris...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container">
-      <div className="row">
-        <div className="col-12">
-          <div className="d-flex justify-content-between align-items-center mb-4">
-            <h2>Mes Favoris</h2>
-            <span className="badge bg-primary">{favorites.length} offres</span>
-          </div>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Mes favoris</h1>
+          <p className="text-gray-600 mt-2">
+            {favorites.length} offre{favorites.length > 1 ? 's' : ''} sauvegardée{favorites.length > 1 ? 's' : ''}
+          </p>
         </div>
-      </div>
 
-      {favorites.length === 0 ? (
-        <div className="text-center py-5">
-          <i className="fas fa-heart fa-3x text-muted mb-3"></i>
-          <h4>Aucun favori</h4>
-          <p className="text-muted">Vous n'avez pas encore ajouté d'offres à vos favoris</p>
-          <Link to="/jobs" className="btn btn-primary">
-            Voir les offres d'emploi
-          </Link>
-        </div>
-      ) : (
-        <div className="row">
-          {favorites.map((favorite) => (
-            <div key={favorite.id} className="col-lg-6 mb-4">
-              <div className="card h-100 shadow-sm">
-                <div className="card-body">
-                  <div className="d-flex justify-content-between align-items-start mb-2">
-                    <h5 className="card-title">{favorite.jobListing.title}</h5>
-                    <button
-                      className="btn btn-outline-danger btn-sm"
-                      onClick={() => removeFavorite(favorite.job_listing_id)}
-                      title="Retirer des favoris"
-                    >
-                      <i className="fas fa-heart-broken"></i>
-                    </button>
-                  </div>
-                  
-                  <p className="card-text text-muted mb-2">
-                    <i className="fas fa-building me-1"></i>
-                    {favorite.jobListing.company?.name}
-                  </p>
-                  
-                  <p className="card-text text-muted mb-2">
-                    <i className="fas fa-map-marker-alt me-1"></i>
-                    {favorite.jobListing.location}
-                  </p>
-                  
-                  <p className="card-text text-muted mb-2">
-                    <i className="fas fa-money-bill-wave me-1"></i>
-                    {formatSalary(favorite.jobListing.salary_min, favorite.jobListing.salary_max)}
-                  </p>
-                  
-                  <p className="card-text text-muted mb-3">
-                    <i className="fas fa-clock me-1"></i>
-                    {getJobTypeLabel(favorite.jobListing.job_type)}
-                  </p>
-                  
-                  <p className="card-text text-muted mb-3">
-                    <i className="fas fa-calendar me-1"></i>
-                    Clôture: {new Date(favorite.jobListing.deadline).toLocaleDateString('fr-FR')}
-                  </p>
-                  
-                  <p className="card-text">
-                    {favorite.jobListing.description.substring(0, 150)}...
-                  </p>
-                  
-                  <div className="d-flex justify-content-between align-items-center mt-3">
-                    <small className="text-muted">
-                      <i className="fas fa-eye me-1"></i>
-                      {favorite.jobListing.views_count} vues
-                    </small>
-                    <div className="d-flex gap-2">
-                      <Link 
-                        to={`/jobs/${favorite.jobListing.id}`} 
-                        className="btn btn-primary btn-sm"
-                      >
-                        Voir détails
-                      </Link>
-                      <Link 
-                        to={`/jobs/${favorite.jobListing.id}/apply`} 
-                        className="btn btn-success btn-sm"
-                      >
-                        Postuler
-                      </Link>
+        {favorites.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {favorites.map((favorite) => (
+              <div key={favorite.id} className="card group hover:shadow-md transition-shadow duration-200">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <span className="text-blue-600 font-bold text-lg">
+                        {favorite.job_listing?.company?.name?.charAt(0) || 'E'}
+                      </span>
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors duration-200">
+                        <Link to={`/jobs/${favorite.job_listing?.id}`} className="hover:underline">
+                          {favorite.job_listing?.title}
+                        </Link>
+                      </h3>
+                      <p className="text-sm text-gray-600">{favorite.job_listing?.company?.name}</p>
                     </div>
                   </div>
+                  
+                  <button
+                    onClick={() => removeFavorite(favorite.job_listing_id)}
+                    className="p-2 text-red-500 hover:text-red-700 transition-colors duration-200"
+                    title="Retirer des favoris"
+                  >
+                    <HeartSolidIcon className="h-5 w-5" />
+                  </button>
+                </div>
+
+                <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                  {favorite.job_listing?.description}
+                </p>
+
+                <div className="space-y-2 mb-4">
+                  <div className="flex items-center text-sm text-gray-500">
+                    <span className="mr-2">📍</span>
+                    <span>{favorite.job_listing?.location}</span>
+                  </div>
+                  <div className="flex items-center text-sm text-gray-500">
+                    <span className="mr-2">💰</span>
+                    <span>
+                      {favorite.job_listing?.salary_min && favorite.job_listing?.salary_max
+                        ? `${favorite.job_listing.salary_min.toLocaleString()} - ${favorite.job_listing.salary_max.toLocaleString()} FCFA`
+                        : 'Salaire non spécifié'
+                      }
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                  <Link
+                    to={`/jobs/${favorite.job_listing?.id}`}
+                    className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center"
+                  >
+                    <EyeIcon className="h-4 w-4 mr-1" />
+                    Voir les détails
+                  </Link>
+                  <Link
+                    to={`/jobs/${favorite.job_listing?.id}/apply`}
+                    className="btn-primary text-sm px-4 py-2"
+                  >
+                    Postuler
+                  </Link>
                 </div>
               </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <div className="mx-auto h-24 w-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+              <HeartIcon className="h-12 w-12 text-gray-400" />
             </div>
-          ))}
-        </div>
-      )}
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              Aucun favori pour le moment
+            </h3>
+            <p className="text-gray-500 mb-6">
+              Commencez à sauvegarder des offres qui vous intéressent en cliquant sur l'icône cœur.
+            </p>
+            <Link
+              to="/jobs"
+              className="btn-primary"
+            >
+              Voir les offres d'emploi
+            </Link>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

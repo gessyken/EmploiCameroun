@@ -2,9 +2,11 @@ import React from 'react';
 
 const AdminPendingJobs = () => {
   return (
-    <div>
-      <h1>Admin Pending Jobs</h1>
-      <p>List of jobs pending admin approval.</p>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-2xl font-bold text-gray-900 mb-4">Offres en Attente</h1>
+        <p className="text-gray-600">Fonctionnalité en cours de développement...</p>
+      </div>
     </div>
   );
 };

@@ -1,199 +1,296 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { 
+  MagnifyingGlassIcon, 
+  MapPinIcon, 
+  BriefcaseIcon,
+  UserGroupIcon,
+  BuildingOfficeIcon,
+  CheckCircleIcon,
+  ArrowRightIcon
+} from '@heroicons/react/24/outline';
 import api from '../api';
 
 const Home = () => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchLocation, setSearchLocation] = useState('');
   const [stats, setStats] = useState({
     totalJobs: 0,
     totalCompanies: 0,
-    totalCandidates: 0,
-    recentJobs: []
+    totalCandidates: 0
   });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const [jobsResponse, companiesResponse] = await Promise.all([
-          api.get('/jobs?per_page=6'),
-          api.get('/search/companies')
-        ]);
-        
-        setStats({
-          totalJobs: jobsResponse.data.total || 0,
-          totalCompanies: companiesResponse.data.length || 0,
-          totalCandidates: 0, // Cette donnée nécessiterait un endpoint spécifique
-          recentJobs: jobsResponse.data.data || []
-        });
-      } catch (error) {
-        console.error('Erreur lors du chargement des statistiques:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchStats();
   }, []);
 
+  const fetchStats = async () => {
+    try {
+      const [jobsResponse, companiesResponse] = await Promise.all([
+        api.get('/search/jobs?per_page=1'),
+        api.get('/search/companies?per_page=1')
+      ]);
+      
+      setStats({
+        totalJobs: jobsResponse.data.total || 0,
+        totalCompanies: companiesResponse.data.total || 0,
+        totalCandidates: 1250 // Mock data
+      });
+    } catch (error) {
+      console.error('Erreur lors du chargement des statistiques:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery || searchLocation) {
+      const params = new URLSearchParams();
+      if (searchQuery) params.append('title', searchQuery);
+      if (searchLocation) params.append('location', searchLocation);
+      window.location.href = `/jobs?${params.toString()}`;
+    }
+  };
+
+  const features = [
+    {
+      icon: BriefcaseIcon,
+      title: 'Offres d\'emploi',
+      description: 'Découvrez des milliers d\'offres d\'emploi dans tous les secteurs',
+      color: 'text-blue-600'
+    },
+    {
+      icon: UserGroupIcon,
+      title: 'Candidats qualifiés',
+      description: 'Trouvez les meilleurs talents pour votre entreprise',
+      color: 'text-green-600'
+    },
+    {
+      icon: BuildingOfficeIcon,
+      title: 'Entreprises de confiance',
+      description: 'Postulez auprès des meilleures entreprises du Cameroun',
+      color: 'text-purple-600'
+    }
+  ];
+
+  const benefits = [
+    'Recherche avancée avec filtres',
+    'Matching intelligent des profils',
+    'Alertes personnalisées',
+    'Interface moderne et intuitive',
+    'Support client 24/7',
+    'Gratuit pour tous les utilisateurs'
+  ];
+
   if (loading) {
     return (
-      <div className="d-flex justify-content-center align-items-center" style={{ height: '400px' }}>
-        <div className="spinner-border" role="status">
-          <span className="visually-hidden">Chargement...</span>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Chargement...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div>
+    <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <section className="hero-section bg-primary text-white py-5 mb-5">
-        <div className="container">
-          <div className="row align-items-center">
-            <div className="col-lg-6">
-              <h1 className="display-4 fw-bold mb-4">
-                Trouvez votre emploi idéal au Cameroun
-              </h1>
-              <p className="lead mb-4">
-                La plateforme de référence pour l'emploi au Cameroun. 
-                Connectez les meilleurs talents aux meilleures entreprises.
-              </p>
-              <div className="d-flex gap-3">
-                <Link to="/jobs" className="btn btn-light btn-lg">
-                  Voir les offres
-                </Link>
-                <Link to="/register" className="btn btn-outline-light btn-lg">
-                  S'inscrire
-                </Link>
+      <section className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 text-white">
+        <div className="absolute inset-0 bg-black opacity-20"></div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+          <div className="text-center">
+            <h1 className="text-4xl md:text-6xl font-bold mb-6">
+              Trouvez votre{' '}
+              <span className="text-yellow-300">emploi idéal</span>
+            </h1>
+            <p className="text-xl md:text-2xl text-blue-100 mb-8 max-w-3xl mx-auto">
+              La plateforme de référence pour connecter les talents aux opportunités au Cameroun
+            </p>
+            
+            {/* Search Bar */}
+            <form onSubmit={handleSearch} className="max-w-4xl mx-auto mb-12">
+              <div className="bg-white rounded-2xl p-2 shadow-2xl">
+                <div className="flex flex-col md:flex-row gap-2">
+                  <div className="flex-1 relative">
+                    <MagnifyingGlassIcon className="h-6 w-6 absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Titre du poste, mots-clés..."
+                      className="w-full pl-12 pr-4 py-4 text-gray-900 placeholder-gray-500 border-0 focus:ring-0 text-lg"
+                    />
+                  </div>
+                  <div className="flex-1 relative">
+                    <MapPinIcon className="h-6 w-6 absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    <input
+                      type="text"
+                      value={searchLocation}
+                      onChange={(e) => setSearchLocation(e.target.value)}
+                      placeholder="Ville, région..."
+                      className="w-full pl-12 pr-4 py-4 text-gray-900 placeholder-gray-500 border-0 focus:ring-0 text-lg"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-colors duration-200 flex items-center justify-center"
+                  >
+                    <MagnifyingGlassIcon className="h-6 w-6 mr-2" />
+                    Rechercher
+                  </button>
+                </div>
               </div>
-            </div>
-            <div className="col-lg-6">
-              <div className="text-center">
-                <i className="fas fa-briefcase fa-10x opacity-50"></i>
-              </div>
+            </form>
+
+            {/* Quick Actions */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                to="/jobs"
+                className="bg-white text-blue-600 hover:bg-gray-50 px-8 py-3 rounded-xl font-semibold transition-colors duration-200"
+              >
+                Voir toutes les offres
+              </Link>
+              <Link
+                to="/register"
+                className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 px-8 py-3 rounded-xl font-semibold transition-colors duration-200"
+              >
+                Créer un compte
+              </Link>
             </div>
           </div>
         </div>
       </section>
 
       {/* Stats Section */}
-      <section className="stats-section py-5">
-        <div className="container">
-          <div className="row text-center">
-            <div className="col-md-4 mb-4">
-              <div className="card border-0 shadow-sm h-100">
-                <div className="card-body">
-                  <i className="fas fa-briefcase fa-3x text-primary mb-3"></i>
-                  <h3 className="display-6 fw-bold text-primary">{stats.totalJobs}</h3>
-                  <p className="text-muted">Offres d'emploi</p>
-                </div>
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="text-4xl font-bold text-blue-600 mb-2">
+                {stats.totalJobs.toLocaleString()}+
               </div>
+              <div className="text-gray-600">Offres d'emploi</div>
             </div>
-            <div className="col-md-4 mb-4">
-              <div className="card border-0 shadow-sm h-100">
-                <div className="card-body">
-                  <i className="fas fa-building fa-3x text-success mb-3"></i>
-                  <h3 className="display-6 fw-bold text-success">{stats.totalCompanies}</h3>
-                  <p className="text-muted">Entreprises</p>
-                </div>
+            <div className="text-center">
+              <div className="text-4xl font-bold text-blue-600 mb-2">
+                {stats.totalCompanies.toLocaleString()}+
               </div>
+              <div className="text-gray-600">Entreprises</div>
             </div>
-            <div className="col-md-4 mb-4">
-              <div className="card border-0 shadow-sm h-100">
-                <div className="card-body">
-                  <i className="fas fa-users fa-3x text-info mb-3"></i>
-                  <h3 className="display-6 fw-bold text-info">{stats.totalCandidates}</h3>
-                  <p className="text-muted">Candidats</p>
-                </div>
+            <div className="text-center">
+              <div className="text-4xl font-bold text-blue-600 mb-2">
+                {stats.totalCandidates.toLocaleString()}+
               </div>
+              <div className="text-gray-600">Candidats</div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Recent Jobs Section */}
-      <section className="recent-jobs py-5 bg-light">
-        <div className="container">
-          <div className="row">
-            <div className="col-12">
-              <h2 className="text-center mb-5">Dernières offres d'emploi</h2>
-            </div>
-          </div>
-          <div className="row">
-            {stats.recentJobs.map((job) => (
-              <div key={job.id} className="col-lg-4 col-md-6 mb-4">
-                <div className="card h-100 shadow-sm">
-                  <div className="card-body">
-                    <h5 className="card-title">{job.title}</h5>
-                    <p className="card-text text-muted">{job.company?.name}</p>
-                    <p className="card-text">
-                      <small className="text-muted">
-                        <i className="fas fa-map-marker-alt me-1"></i>
-                        {job.location}
-                      </small>
-                    </p>
-                    <p className="card-text">
-                      <small className="text-muted">
-                        <i className="fas fa-clock me-1"></i>
-                        {job.job_type}
-                      </small>
-                    </p>
-                    <div className="d-flex justify-content-between align-items-center">
-                      <span className="badge bg-primary">{job.status}</span>
-                      <Link to={`/jobs/${job.id}`} className="btn btn-outline-primary btn-sm">
-                        Voir détails
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="text-center mt-4">
-            <Link to="/jobs" className="btn btn-primary btn-lg">
-              Voir toutes les offres
-            </Link>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="features py-5">
-        <div className="container">
-          <div className="row">
-            <div className="col-12">
-              <h2 className="text-center mb-5">Pourquoi choisir EmploiCameroun ?</h2>
+      <section className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Pourquoi choisir EmploiCameroun ?
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Une plateforme moderne et intuitive pour faciliter votre recherche d'emploi
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {features.map((feature, index) => (
+              <div key={index} className="card text-center group hover:shadow-lg transition-shadow duration-200">
+                <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 group-hover:bg-blue-100 transition-colors duration-200 mb-6`}>
+                  <feature.icon className={`h-8 w-8 ${feature.color}`} />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                  {feature.title}
+                </h3>
+                <p className="text-gray-600">
+                  {feature.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Benefits Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+                Des fonctionnalités qui font la différence
+              </h2>
+              <p className="text-xl text-gray-600 mb-8">
+                Découvrez tous les outils dont vous avez besoin pour réussir votre recherche d'emploi
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {benefits.map((benefit, index) => (
+                  <div key={index} className="flex items-center">
+                    <CheckCircleIcon className="h-6 w-6 text-green-500 mr-3 flex-shrink-0" />
+                    <span className="text-gray-700">{benefit}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-8">
+                <Link
+                  to="/register"
+                  className="btn-primary inline-flex items-center"
+                >
+                  Commencer maintenant
+                  <ArrowRightIcon className="h-5 w-5 ml-2" />
+                </Link>
+              </div>
+            </div>
+            <div className="relative">
+              <div className="bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl p-8">
+                <div className="bg-white rounded-xl p-6 shadow-lg">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                    Interface moderne
+                  </h3>
+                  <p className="text-gray-600 mb-4">
+                    Une expérience utilisateur optimisée pour une navigation fluide et intuitive.
+                  </p>
+                  <div className="flex items-center text-blue-600 font-medium">
+                    <span>Découvrir l'interface</span>
+                    <ArrowRightIcon className="h-4 w-4 ml-2" />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-          <div className="row">
-            <div className="col-lg-4 mb-4">
-              <div className="text-center">
-                <i className="fas fa-search fa-3x text-primary mb-3"></i>
-                <h4>Recherche intelligente</h4>
-                <p className="text-muted">
-                  Trouvez des offres qui correspondent parfaitement à votre profil grâce à notre algorithme de matching.
-                </p>
-              </div>
-            </div>
-            <div className="col-lg-4 mb-4">
-              <div className="text-center">
-                <i className="fas fa-bell fa-3x text-success mb-3"></i>
-                <h4>Alertes personnalisées</h4>
-                <p className="text-muted">
-                  Recevez des notifications en temps réel pour les nouvelles offres qui vous intéressent.
-                </p>
-              </div>
-            </div>
-            <div className="col-lg-4 mb-4">
-              <div className="text-center">
-                <i className="fas fa-shield-alt fa-3x text-warning mb-3"></i>
-                <h4>Offres vérifiées</h4>
-                <p className="text-muted">
-                  Toutes nos offres sont vérifiées par notre équipe pour garantir leur authenticité.
-                </p>
-              </div>
-            </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 bg-blue-600">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            Prêt à trouver votre emploi idéal ?
+          </h2>
+          <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+            Rejoignez des milliers de candidats qui ont trouvé leur emploi de rêve grâce à EmploiCameroun
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
+              to="/register"
+              className="bg-white text-blue-600 hover:bg-gray-50 px-8 py-3 rounded-xl font-semibold transition-colors duration-200"
+            >
+              Créer un compte gratuit
+            </Link>
+            <Link
+              to="/jobs"
+              className="border-2 border-white text-white hover:bg-white hover:text-blue-600 px-8 py-3 rounded-xl font-semibold transition-colors duration-200"
+            >
+              Voir les offres
+            </Link>
           </div>
         </div>
       </section>
