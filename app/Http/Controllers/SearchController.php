@@ -12,7 +12,10 @@ class SearchController extends Controller
     public function jobs(Request $request)
     {
         $query = JobListing::whereIn('status', ['approved', 'pending'])
-            ->where('deadline', '>=', now())
+            ->where(function($q) {
+                $q->where('deadline', '>=', now())
+                  ->orWhere('created_at', '>=', now()->subDays(30)); // Afficher les offres récentes même expirées
+            })
             ->with(['company', 'applications']);
 
         // Filtres de base

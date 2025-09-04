@@ -24,7 +24,9 @@ class RecruiterApplicationController extends Controller
     public function show(Application $application)
     {
         // Verify that the application belongs to the recruiter
-        $this->authorize('view', $application);
+        if ($application->jobListing->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Candidature non trouvée'], 404);
+        }
 
         // return view('recruiter.applications.show', compact('application'));
         return response()->json($application->load('candidate.candidateProfile', 'jobListing'));
@@ -32,7 +34,10 @@ class RecruiterApplicationController extends Controller
 
     public function updateStatus(Request $request, Application $application)
     {
-        $this->authorize('update', $application);
+        // Verify that the application belongs to the recruiter
+        if ($application->jobListing->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Candidature non trouvée'], 404);
+        }
 
         $request->validate([
             'status' => 'required|string|in:shortlisted,rejected,hired',
@@ -45,7 +50,6 @@ class RecruiterApplicationController extends Controller
             new ApplicationStatusUpdatedNotification($application)
         );
 
-        // return back()->with('success', 'Status updated');
-        return response('Status updated successfully');
+        return response()->json(['message' => 'Statut mis à jour avec succès']);
     }
 }
