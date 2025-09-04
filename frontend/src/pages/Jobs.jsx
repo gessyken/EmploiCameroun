@@ -45,7 +45,9 @@ const Jobs = () => {
       });
 
       const response = await api.get(`/search/jobs?${params.toString()}`);
-      setJobs(response.data.data || []);
+      // S'assurer que jobs est un tableau
+      const jobsData = Array.isArray(response.data) ? response.data : (response.data.data || []);
+      setJobs(jobsData);
       setPagination({
         current_page: response.data.current_page || 1,
         last_page: response.data.last_page || 1,

@@ -41,17 +41,20 @@ class CandidateProfileController extends Controller
 
         // Traiter les compétences
         if ($request->has('skills')) {
-            $this->processSkills($profile, $request->skills);
+            $skills = is_string($request->skills) ? json_decode($request->skills, true) : $request->skills;
+            $this->processSkills($profile, $skills);
         }
 
         // Traiter les expériences
         if ($request->has('experiences')) {
-            $this->processExperiences($profile, $request->experiences);
+            $experiences = is_string($request->experiences) ? json_decode($request->experiences, true) : $request->experiences;
+            $this->processExperiences($profile, $experiences);
         }
 
         // Traiter les formations
         if ($request->has('educations')) {
-            $this->processEducations($profile, $request->educations);
+            $educations = is_string($request->educations) ? json_decode($request->educations, true) : $request->educations;
+            $this->processEducations($profile, $educations);
         }
 
         // Traiter le CV
@@ -81,17 +84,20 @@ class CandidateProfileController extends Controller
 
         // Traiter les compétences
         if ($request->has('skills')) {
-            $this->processSkills($profile, $request->skills);
+            $skills = is_string($request->skills) ? json_decode($request->skills, true) : $request->skills;
+            $this->processSkills($profile, $skills);
         }
 
         // Traiter les expériences
         if ($request->has('experiences')) {
-            $this->processExperiences($profile, $request->experiences);
+            $experiences = is_string($request->experiences) ? json_decode($request->experiences, true) : $request->experiences;
+            $this->processExperiences($profile, $experiences);
         }
 
         // Traiter les formations
         if ($request->has('educations')) {
-            $this->processEducations($profile, $request->educations);
+            $educations = is_string($request->educations) ? json_decode($request->educations, true) : $request->educations;
+            $this->processEducations($profile, $educations);
         }
 
         return response()->json([

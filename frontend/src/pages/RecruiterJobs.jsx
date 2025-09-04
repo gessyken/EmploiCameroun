@@ -36,9 +36,12 @@ const RecruiterJobs = () => {
   const fetchJobs = async () => {
     try {
       const response = await api.get('/recruiter/jobs');
-      setJobs(response.data.data || []);
+      // S'assurer que jobs est un tableau
+      const jobsData = Array.isArray(response.data) ? response.data : (response.data.data || []);
+      setJobs(jobsData);
     } catch (error) {
       console.error('Erreur lors du chargement des offres:', error);
+      setJobs([]); // Initialiser avec un tableau vide en cas d'erreur
     } finally {
       setLoading(false);
     }

@@ -68,23 +68,45 @@ const CandidateProfile = () => {
     setSaving(true);
 
     try {
-      const formDataToSend = new FormData();
-      formDataToSend.append('bio', formData.bio);
-      formDataToSend.append('phone', formData.phone);
-      formDataToSend.append('address', formData.address);
-      formDataToSend.append('city', formData.city);
-      formDataToSend.append('experiences', JSON.stringify(formData.experiences));
-      formDataToSend.append('educations', JSON.stringify(formData.educations));
-      formDataToSend.append('skill_ids', JSON.stringify(formData.skill_ids));
-      
-      if (formData.resume) {
-        formDataToSend.append('resume', formData.resume);
-      }
+      // Préparer les données pour l'envoi
+      const dataToSend = {
+        bio: formData.bio,
+        phone_number: formData.phone,
+        address: formData.address,
+        city: formData.city,
+        experiences: formData.experiences,
+        educations: formData.educations,
+        skills: formData.skill_ids.map(id => ({ id, level: 'intermediate' }))
+      };
 
-      if (profile) {
-        await api.put('/candidate/profile', formDataToSend);
+      // Si il y a un CV, utiliser FormData
+      if (formData.resume) {
+        const formDataToSend = new FormData();
+        Object.keys(dataToSend).forEach(key => {
+          if (Array.isArray(dataToSend[key])) {
+            formDataToSend.append(key, JSON.stringify(dataToSend[key]));
+          } else {
+            formDataToSend.append(key, dataToSend[key]);
+          }
+        });
+        formDataToSend.append('resume', formData.resume);
+
+        if (profile) {
+          await api.put('/candidate/profile', formDataToSend, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          });
+        } else {
+          await api.post('/candidate/profile', formDataToSend, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          });
+        }
       } else {
-        await api.post('/candidate/profile', formDataToSend);
+        // Sinon, envoyer en JSON
+        if (profile) {
+          await api.put('/candidate/profile', dataToSend);
+        } else {
+          await api.post('/candidate/profile', dataToSend);
+        }
       }
       
       fetchProfile();

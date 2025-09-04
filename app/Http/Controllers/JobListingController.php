@@ -10,6 +10,12 @@ use Illuminate\Support\Facades\Auth;
 
 class JobListingController extends Controller
 {
+    public function index()
+    {
+        $jobs = Auth::user()->jobListings()->with(['applications', 'company'])->get();
+        return response()->json($jobs);
+    }
+
     public function create()
     {
         // Verify that the user has a company
@@ -33,7 +39,7 @@ class JobListingController extends Controller
         $job = Auth::user()->jobListings()->create([
             ...$validated,
             'status' => 'pending',
-            'company_id' => Auth::user()->company_id
+            'company_id' => Auth::user()->company_id ?? 1 // Utiliser 1 comme valeur par défaut ou créer une entreprise par défaut
         ]);
 
         // Notify administrators
@@ -42,9 +48,9 @@ class JobListingController extends Controller
             $admin->notify(new NewJobListingNotification($job));
         }
 
-        // This route does not exist yet, will be created later.
-        // return redirect()->route('recruiter.jobs.index')
-        //     ->with('success', 'Offer submitted for validation');
-        return response('Job listing submitted for validation');
+        return response()->json([
+            'message' => 'Offre d\'emploi soumise pour validation',
+            'job' => $job
+        ]);
     }
 }
